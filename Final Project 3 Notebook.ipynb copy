@@ -1,0 +1,1611 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Jack Littlefield Project 3"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 97,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import requests\n",
+    "import json\n",
+    "import pandas as pd\n",
+    "import time\n",
+    "from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier\n",
+    "from sklearn.metrics import confusion_matrix"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 98,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "http://www.reddit.com/r/personalfinance.json\n",
+      "0\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9eisnh\n",
+      "1\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9en125\n",
+      "2\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9eo85o\n",
+      "3\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9en77j\n",
+      "4\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9en19i\n",
+      "5\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ekouf\n",
+      "6\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ejp13\n",
+      "7\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ecfnc\n",
+      "8\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ei9oj\n",
+      "9\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ehe1o\n",
+      "10\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9edocl\n",
+      "11\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ectpz\n",
+      "12\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9eeg84\n",
+      "13\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ecvmg\n",
+      "14\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e9g6e\n",
+      "15\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9eb7i6\n",
+      "16\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ea94h\n",
+      "17\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e5az6\n",
+      "18\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e8s4h\n",
+      "19\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e5bfy\n",
+      "20\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e55vd\n",
+      "21\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e4ae9\n",
+      "22\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e4c7t\n",
+      "23\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dzsp7\n",
+      "24\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e1xcc\n",
+      "25\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9e0q0o\n",
+      "26\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dyhul\n",
+      "27\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dwqlv\n",
+      "28\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dq2pb\n",
+      "29\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dw0th\n",
+      "30\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dxdn6\n",
+      "31\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dwjtk\n",
+      "32\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dvliw\n",
+      "33\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9ducg2\n",
+      "34\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dro3m\n",
+      "35\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9drpq2\n",
+      "36\n",
+      "http://www.reddit.com/r/personalfinance.json?after=t3_9dowiv\n",
+      "37\n"
+     ]
+    }
+   ],
+   "source": [
+    "\n",
+    "url = 'http://www.reddit.com/r/personalfinance.json'\n",
+    "posts = []\n",
+    "after = None\n",
+    "var = 0\n",
+    "\n",
+    "\n",
+    "for _ in range(38):\n",
+    "    if after == None:\n",
+    "        curent_url = url\n",
+    "    else:\n",
+    "        curent_url = url + '?after=' + after\n",
+    "    print(curent_url)\n",
+    "    res = requests.get(curent_url, headers = {'User-agent':'Jacks bot'})\n",
+    "    if res.status_code != 200:\n",
+    "        print('States Error', res.status_code)\n",
+    "        break\n",
+    "    print(var)\n",
+    "    var += 1\n",
+    "    curent_dict = res.json()\n",
+    "    curent_posts = [p['data'] for p in curent_dict['data']['children']]\n",
+    "    posts.extend(curent_posts)\n",
+    "    after = curent_dict['data']['after']\n",
+    "    time.sleep(1.2)   \n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 99,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "PI_data = pd.DataFrame(posts)\n",
+    "pd.DataFrame(posts).to_csv('PI_1.csv', index = False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 100,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "http://www.reddit.com/r/financialindependence.json\n",
+      "0\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9enilc\n",
+      "1\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9e1uef\n",
+      "2\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9cz1ak\n",
+      "3\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9ckm4e\n",
+      "4\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9co666\n",
+      "5\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9c7tex\n",
+      "6\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9bpc6x\n",
+      "7\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9bg64a\n",
+      "8\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9aztmz\n",
+      "9\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9a4np6\n",
+      "10\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_99pfgz\n",
+      "11\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_98xfbs\n",
+      "12\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_98jj3t\n",
+      "13\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_97uxcx\n",
+      "14\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_97hcqx\n",
+      "15\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_97cbyk\n",
+      "16\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9728gk\n",
+      "17\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_96lu91\n",
+      "18\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_95ntht\n",
+      "19\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_9565sa\n",
+      "20\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_94n7al\n",
+      "21\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_94m885\n",
+      "22\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_942z68\n",
+      "23\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_938e2a\n",
+      "24\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_93cjhm\n",
+      "25\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_92tvv4\n",
+      "26\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_927zx6\n",
+      "27\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_91vdk6\n",
+      "28\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_90wei8\n",
+      "29\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_90m5dc\n",
+      "30\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_8zw0vd\n",
+      "31\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_8z4hp8\n",
+      "32\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_8yj29n\n",
+      "33\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_8xott4\n",
+      "34\n",
+      "http://www.reddit.com/r/financialindependence.json?after=t3_8xm0cf\n",
+      "35\n"
+     ]
+    }
+   ],
+   "source": [
+    "\n",
+    "url = 'http://www.reddit.com/r/financialindependence.json'\n",
+    "posts = []\n",
+    "after = None\n",
+    "var = 0\n",
+    "\n",
+    "\n",
+    "for _ in range(36):\n",
+    "    if after == None:\n",
+    "        curent_url = url\n",
+    "    else:\n",
+    "        curent_url = url + '?after=' + after\n",
+    "    print(curent_url)\n",
+    "    res = requests.get(curent_url, headers = {'User-agent':'Jacks bot'})\n",
+    "    if res.status_code != 200:\n",
+    "        print('States Error', res.status_code)\n",
+    "        break\n",
+    "    print(var)\n",
+    "    var += 1\n",
+    "    curent_dict = res.json()\n",
+    "    curent_posts = [p['data'] for p in curent_dict['data']['children']]\n",
+    "    posts.extend(curent_posts)\n",
+    "    after = curent_dict['data']['after']\n",
+    "    time.sleep(1.2)  \n",
+    "    \n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 101,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#FI_data['subreddit']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 102,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "FI_data = pd.DataFrame(posts)\n",
+    "pd.DataFrame(posts).to_csv('FI_1.csv', index = False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 103,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(1838, 2)"
+      ]
+     },
+     "execution_count": 103,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\n",
+    "\n",
+    "comb_df = PI_data[['title', 'subreddit']]\n",
+    "\n",
+    "comb_df = pd.concat((comb_df, FI_data[['title', 'subreddit']]), axis=0)\n",
+    "\n",
+    "comb_df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 104,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "comb_df.to_csv('fin_data.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 105,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "comb_df.loc[comb_df['subreddit'] != 'financialindependence', 'class'] = 0\n",
+    "\n",
+    "comb_df.loc[comb_df['subreddit'] != 'personalfinance', 'class'] = 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 106,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "comb_df['class'] = comb_df['class'].astype(int)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 107,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>title</th>\n",
+       "      <th>subreddit</th>\n",
+       "      <th>class</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>30-Day Challenge #9: Track all spending! (Sept...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Weekday Help Thread for the week of September ...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>So I fell for a scam yesterday and it still an...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Looking to change jobs from Oilfield to Weldin...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>[Insurance] A drunk driver hit both of our car...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                               title        subreddit  class\n",
+       "0  30-Day Challenge #9: Track all spending! (Sept...  personalfinance      0\n",
+       "1  Weekday Help Thread for the week of September ...  personalfinance      0\n",
+       "2  So I fell for a scam yesterday and it still an...  personalfinance      0\n",
+       "3  Looking to change jobs from Oilfield to Weldin...  personalfinance      0\n",
+       "4  [Insurance] A drunk driver hit both of our car...  personalfinance      0"
+      ]
+     },
+     "execution_count": 107,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "comb_df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 108,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = comb_df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 109,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>title</th>\n",
+       "      <th>subreddit</th>\n",
+       "      <th>class</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>30-Day Challenge #9: Track all spending! (Sept...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Weekday Help Thread for the week of September ...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>So I fell for a scam yesterday and it still an...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Looking to change jobs from Oilfield to Weldin...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>[Insurance] A drunk driver hit both of our car...</td>\n",
+       "      <td>personalfinance</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                               title        subreddit  class\n",
+       "0  30-Day Challenge #9: Track all spending! (Sept...  personalfinance      0\n",
+       "1  Weekday Help Thread for the week of September ...  personalfinance      0\n",
+       "2  So I fell for a scam yesterday and it still an...  personalfinance      0\n",
+       "3  Looking to change jobs from Oilfield to Weldin...  personalfinance      0\n",
+       "4  [Insurance] A drunk driver hit both of our car...  personalfinance      0"
+      ]
+     },
+     "execution_count": 109,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "comb_df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 110,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X = df['title']\n",
+    "y = df['class']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 111,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from bs4 import BeautifulSoup \n",
+    "from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer\n",
+    "from sklearn.feature_extraction import stop_words\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.model_selection import cross_val_score"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 112,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/anaconda3/envs/dsi/lib/python3.6/site-packages/sklearn/model_selection/_split.py:2026: FutureWarning: From version 0.21, test_size will always complement train_size unless both are specified.\n",
+      "  FutureWarning)\n"
+     ]
+    }
+   ],
+   "source": [
+    "X_train, X_test, y_train, y_test = train_test_split(X, y, train_size = .333)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 113,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#tvec =  TfidfVectorizer(stop_words='english')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 114,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#X_train_tvec = X_train"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 115,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#X_train_tvec = tvec.fit_transform(X_train_tvec)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 116,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#X_train_tvec.todense()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 117,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#X_test = tvec.transform(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 118,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#model_tvec_lr = LogisticRegression()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 119,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'model_tvec_lr = LogisticRegression()\\nprint(cross_val_score(model_tvec_lr, X_train, y_train).mean())\\nmodel_lr.fit(X_train, y_train)\\nmodel_lr.predict(tvec.transform(X_test))'"
+      ]
+     },
+     "execution_count": 119,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "'''model_tvec_lr = LogisticRegression()\n",
+    "print(cross_val_score(model_tvec_lr, X_train, y_train).mean())\n",
+    "model_lr.fit(X_train, y_train)\n",
+    "model_lr.predict(tvec.transform(X_test))'''"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 120,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "cvec = CountVectorizer(stop_words='english', ngram_range=(1, 6))\n",
+    "X_train = cvec.fit_transform(X_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 121,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "matrix([[0, 0, 0, ..., 0, 0, 0],\n",
+       "        [0, 0, 0, ..., 0, 0, 0],\n",
+       "        [0, 0, 0, ..., 0, 0, 0],\n",
+       "        ...,\n",
+       "        [0, 0, 0, ..., 0, 0, 0],\n",
+       "        [0, 0, 0, ..., 0, 0, 0],\n",
+       "        [0, 0, 0, ..., 0, 0, 0]], dtype=int64)"
+      ]
+     },
+     "execution_count": 121,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_train.todense()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 122,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_test = cvec.transform(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 177,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y_act = y_test\n",
+    "y_pred = model_lr.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 179,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import seaborn as sns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 183,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<matplotlib.axes._subplots.AxesSubplot at 0x1a1bf81978>"
+      ]
+     },
+     "execution_count": 183,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 2 Axes>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "sns.heatmap(confusion_matrix(y_act, y_pred))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 165,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "preds_X = pd.DataFrame(preds_X)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 148,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.7663398692810457\n"
+     ]
+    }
+   ],
+   "source": [
+    "model_lr = LogisticRegression()\n",
+    "print(cross_val_score(model_lr, X_train, y_train).mean())\n",
+    "model_lr.fit(X_train, y_train)\n",
+    "preds_X = model_lr.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 125,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "Empty DataFrame\n",
+       "Columns: []\n",
+       "Index: []"
+      ]
+     },
+     "execution_count": 125,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pd.DataFrame()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 126,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.7911908646003263"
+      ]
+     },
+     "execution_count": 126,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model_lr.score(X_test, y_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 127,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "coefs = model_lr.coef_"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 128,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "names_1 = cvec.get_feature_names()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 129,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([0.05436808, 0.05436808, 0.05436808, ..., 0.05436808, 0.05436808,\n",
+       "       0.25014401])"
+      ]
+     },
+     "execution_count": 129,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "coefs[0]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 130,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "names = pd.DataFrame({'coefs':coefs[0], 'names':names_1})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 131,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>coefs</th>\n",
+       "      <th>names</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>00 expense</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>00 expense ratio</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>00 expense ratio mutual</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>00 expense ratio mutual funds</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>00 expense ratio mutual funds individual</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>-0.458551</td>\n",
+       "      <td>000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>-0.059131</td>\n",
+       "      <td>000 2014</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>-0.059131</td>\n",
+       "      <td>000 2014 5000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>-0.059131</td>\n",
+       "      <td>000 2014 5000 year</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10</th>\n",
+       "      <td>-0.047517</td>\n",
+       "      <td>000 30</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11</th>\n",
+       "      <td>-0.047517</td>\n",
+       "      <td>000 30 donations</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12</th>\n",
+       "      <td>-0.047517</td>\n",
+       "      <td>000 30 donations disputed</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13</th>\n",
+       "      <td>-0.047517</td>\n",
+       "      <td>000 30 donations disputed 30</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>14</th>\n",
+       "      <td>-0.047517</td>\n",
+       "      <td>000 30 donations disputed 30 payments</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>15</th>\n",
+       "      <td>-0.050481</td>\n",
+       "      <td>000 debt</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>16</th>\n",
+       "      <td>-0.050481</td>\n",
+       "      <td>000 debt undergrad</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>17</th>\n",
+       "      <td>-0.050481</td>\n",
+       "      <td>000 debt undergrad degree</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>18</th>\n",
+       "      <td>-0.050481</td>\n",
+       "      <td>000 debt undergrad degree looking</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>19</th>\n",
+       "      <td>-0.050481</td>\n",
+       "      <td>000 debt undergrad degree looking advice</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>20</th>\n",
+       "      <td>-0.068141</td>\n",
+       "      <td>000 pre</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>21</th>\n",
+       "      <td>-0.068141</td>\n",
+       "      <td>000 pre approved</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>22</th>\n",
+       "      <td>-0.068141</td>\n",
+       "      <td>000 pre approved surgery</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>23</th>\n",
+       "      <td>-0.220933</td>\n",
+       "      <td>000 surplus</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>24</th>\n",
+       "      <td>-0.220933</td>\n",
+       "      <td>000 surplus time</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>25</th>\n",
+       "      <td>-0.220933</td>\n",
+       "      <td>000 surplus time life</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>26</th>\n",
+       "      <td>-0.012349</td>\n",
+       "      <td>000 year</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>27</th>\n",
+       "      <td>0.008259</td>\n",
+       "      <td>01</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>28</th>\n",
+       "      <td>0.008259</td>\n",
+       "      <td>01 2018</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>29</th>\n",
+       "      <td>0.011119</td>\n",
+       "      <td>02</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9969</th>\n",
+       "      <td>0.137024</td>\n",
+       "      <td>young single mom kids</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9970</th>\n",
+       "      <td>0.137024</td>\n",
+       "      <td>young single mom kids make</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9971</th>\n",
+       "      <td>-0.021849</td>\n",
+       "      <td>younger</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9972</th>\n",
+       "      <td>-0.021849</td>\n",
+       "      <td>younger siblings</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9973</th>\n",
+       "      <td>-0.021849</td>\n",
+       "      <td>younger siblings despite</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9974</th>\n",
+       "      <td>-0.021849</td>\n",
+       "      <td>younger siblings despite having</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9975</th>\n",
+       "      <td>-0.021849</td>\n",
+       "      <td>younger siblings despite having history</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9976</th>\n",
+       "      <td>0.145683</td>\n",
+       "      <td>youtube</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9977</th>\n",
+       "      <td>0.145683</td>\n",
+       "      <td>youtube channels</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9978</th>\n",
+       "      <td>0.100288</td>\n",
+       "      <td>youtube channels recommend</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9979</th>\n",
+       "      <td>0.045395</td>\n",
+       "      <td>youtube channels regardings</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9980</th>\n",
+       "      <td>0.045395</td>\n",
+       "      <td>youtube channels regardings fi</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9981</th>\n",
+       "      <td>-0.089099</td>\n",
+       "      <td>yr</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9982</th>\n",
+       "      <td>-0.089099</td>\n",
+       "      <td>yr old</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9983</th>\n",
+       "      <td>-0.057106</td>\n",
+       "      <td>yr old 1500</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9984</th>\n",
+       "      <td>-0.057106</td>\n",
+       "      <td>yr old 1500 checking</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9985</th>\n",
+       "      <td>-0.057106</td>\n",
+       "      <td>yr old 1500 checking account</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9986</th>\n",
+       "      <td>-0.057106</td>\n",
+       "      <td>yr old 1500 checking account gambling</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9987</th>\n",
+       "      <td>-0.031993</td>\n",
+       "      <td>yr old want</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9988</th>\n",
+       "      <td>-0.031993</td>\n",
+       "      <td>yr old want learn</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9989</th>\n",
+       "      <td>-0.031993</td>\n",
+       "      <td>yr old want learn stop</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9990</th>\n",
+       "      <td>-0.031993</td>\n",
+       "      <td>yr old want learn stop living</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9991</th>\n",
+       "      <td>-0.093402</td>\n",
+       "      <td>yrs</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9992</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>zero</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9993</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>zero 00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9994</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>zero 00 expense</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9995</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>zero 00 expense ratio</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9996</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>zero 00 expense ratio mutual</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9997</th>\n",
+       "      <td>0.054368</td>\n",
+       "      <td>zero 00 expense ratio mutual funds</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9998</th>\n",
+       "      <td>0.250144</td>\n",
+       "      <td>zone</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>9999 rows × 2 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         coefs                                     names\n",
+       "0     0.054368                                        00\n",
+       "1     0.054368                                00 expense\n",
+       "2     0.054368                          00 expense ratio\n",
+       "3     0.054368                   00 expense ratio mutual\n",
+       "4     0.054368             00 expense ratio mutual funds\n",
+       "5     0.054368  00 expense ratio mutual funds individual\n",
+       "6    -0.458551                                       000\n",
+       "7    -0.059131                                  000 2014\n",
+       "8    -0.059131                             000 2014 5000\n",
+       "9    -0.059131                        000 2014 5000 year\n",
+       "10   -0.047517                                    000 30\n",
+       "11   -0.047517                          000 30 donations\n",
+       "12   -0.047517                 000 30 donations disputed\n",
+       "13   -0.047517              000 30 donations disputed 30\n",
+       "14   -0.047517     000 30 donations disputed 30 payments\n",
+       "15   -0.050481                                  000 debt\n",
+       "16   -0.050481                        000 debt undergrad\n",
+       "17   -0.050481                 000 debt undergrad degree\n",
+       "18   -0.050481         000 debt undergrad degree looking\n",
+       "19   -0.050481  000 debt undergrad degree looking advice\n",
+       "20   -0.068141                                   000 pre\n",
+       "21   -0.068141                          000 pre approved\n",
+       "22   -0.068141                  000 pre approved surgery\n",
+       "23   -0.220933                               000 surplus\n",
+       "24   -0.220933                          000 surplus time\n",
+       "25   -0.220933                     000 surplus time life\n",
+       "26   -0.012349                                  000 year\n",
+       "27    0.008259                                        01\n",
+       "28    0.008259                                   01 2018\n",
+       "29    0.011119                                        02\n",
+       "...        ...                                       ...\n",
+       "9969  0.137024                     young single mom kids\n",
+       "9970  0.137024                young single mom kids make\n",
+       "9971 -0.021849                                   younger\n",
+       "9972 -0.021849                          younger siblings\n",
+       "9973 -0.021849                  younger siblings despite\n",
+       "9974 -0.021849           younger siblings despite having\n",
+       "9975 -0.021849   younger siblings despite having history\n",
+       "9976  0.145683                                   youtube\n",
+       "9977  0.145683                          youtube channels\n",
+       "9978  0.100288                youtube channels recommend\n",
+       "9979  0.045395               youtube channels regardings\n",
+       "9980  0.045395            youtube channels regardings fi\n",
+       "9981 -0.089099                                        yr\n",
+       "9982 -0.089099                                    yr old\n",
+       "9983 -0.057106                               yr old 1500\n",
+       "9984 -0.057106                      yr old 1500 checking\n",
+       "9985 -0.057106              yr old 1500 checking account\n",
+       "9986 -0.057106     yr old 1500 checking account gambling\n",
+       "9987 -0.031993                               yr old want\n",
+       "9988 -0.031993                         yr old want learn\n",
+       "9989 -0.031993                    yr old want learn stop\n",
+       "9990 -0.031993             yr old want learn stop living\n",
+       "9991 -0.093402                                       yrs\n",
+       "9992  0.054368                                      zero\n",
+       "9993  0.054368                                   zero 00\n",
+       "9994  0.054368                           zero 00 expense\n",
+       "9995  0.054368                     zero 00 expense ratio\n",
+       "9996  0.054368              zero 00 expense ratio mutual\n",
+       "9997  0.054368        zero 00 expense ratio mutual funds\n",
+       "9998  0.250144                                      zone\n",
+       "\n",
+       "[9999 rows x 2 columns]"
+      ]
+     },
+     "execution_count": 131,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "names"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 132,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>coefs</th>\n",
+       "      <th>names</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>2179</th>\n",
+       "      <td>-1.670467</td>\n",
+       "      <td>credit</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1520</th>\n",
+       "      <td>-1.319295</td>\n",
+       "      <td>car</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>387</th>\n",
+       "      <td>-1.118113</td>\n",
+       "      <td>401k</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5083</th>\n",
+       "      <td>-1.024650</td>\n",
+       "      <td>loan</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4525</th>\n",
+       "      <td>-0.928426</td>\n",
+       "      <td>ira</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         coefs   names\n",
+       "2179 -1.670467  credit\n",
+       "1520 -1.319295     car\n",
+       "387  -1.118113    401k\n",
+       "5083 -1.024650    loan\n",
+       "4525 -0.928426     ira"
+      ]
+     },
+     "execution_count": 132,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "names.sort_values('coefs').head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 133,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>coefs</th>\n",
+       "      <th>names</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>7008</th>\n",
+       "      <td>0.526433</td>\n",
+       "      <td>quit</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8715</th>\n",
+       "      <td>0.529348</td>\n",
+       "      <td>thanks</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7396</th>\n",
+       "      <td>0.577559</td>\n",
+       "      <td>retired</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2915</th>\n",
+       "      <td>0.622379</td>\n",
+       "      <td>equity</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3185</th>\n",
+       "      <td>1.871333</td>\n",
+       "      <td>fi</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         coefs    names\n",
+       "7008  0.526433     quit\n",
+       "8715  0.529348   thanks\n",
+       "7396  0.577559  retired\n",
+       "2915  0.622379   equity\n",
+       "3185  1.871333       fi"
+      ]
+     },
+     "execution_count": 133,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "names.sort_values('coefs').tail()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 134,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.6944444444444445"
+      ]
+     },
+     "execution_count": 134,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rf = RandomForestClassifier()\n",
+    "cross_val_score(rf, X_train, y_train).mean()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 135,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.7601957585644372"
+      ]
+     },
+     "execution_count": 135,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rf.fit(X_train, y_train)\n",
+    "rf.score(X_test, y_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 136,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.7467320261437909"
+      ]
+     },
+     "execution_count": 136,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "et = ExtraTreesClassifier(n_estimators=100)\n",
+    "cross_val_score(et, X_train, y_train).mean()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 137,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion='gini',\n",
+       "           max_depth=None, max_features='auto', max_leaf_nodes=None,\n",
+       "           min_impurity_decrease=0.0, min_impurity_split=None,\n",
+       "           min_samples_leaf=1, min_samples_split=2,\n",
+       "           min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=1,\n",
+       "           oob_score=False, random_state=None, verbose=0, warm_start=False)"
+      ]
+     },
+     "execution_count": 137,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "et.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 138,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.763458401305057"
+      ]
+     },
+     "execution_count": 138,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "et.score(X_test, y_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 185,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "et_pred = et.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 187,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[457, 174],\n",
+       "       [116, 479]])"
+      ]
+     },
+     "execution_count": 187,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "confusion_matrix(y_act, et_pred)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Executive Summary\n",
+    "\n",
+    "\n",
+    "Have you ever felt the need to classify different inputs to get important information out of words? My goal was to build a model that is able to accuratly predict whether the title of the reddit post came from one subreddit, or another. \n",
+    "\n",
+    "Originally, I planned on using the Soccer and NFL subreddits to build a classification model. However, I was not happy with how similar the two were. I scored very highly on the training data, and figured it would be more interesting to use two subreddits of similar topics. I chose to do Personal Finance and Financial Independence. These scores were more interesting to me. \n",
+    "\n",
+    "Also interesting is the individual coefficients the logistic regression model came up with. It is cool to sort to see the most determinant coefficients for the model. \n",
+    "\n",
+    "Overall, my process was explore the subreddit, scrape the data, clean and organize the data, and build the various models. "
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python [conda env:dsi]",
+   "language": "python",
+   "name": "conda-env-dsi-py"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
